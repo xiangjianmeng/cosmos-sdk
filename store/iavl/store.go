@@ -10,7 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	"github.com/cosmos/cosmos-sdk/store/types"
 
-	"github.com/pkg/errors"
 	"github.com/tendermint/iavl"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
@@ -24,7 +23,13 @@ const (
 
 // LoadStore loads the iavl store
 func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool) (types.CommitStore, error) {
-	tree := iavl.NewMutableTree(db, defaultIAVLCacheSize)
+	var iavlOpts *iavl.Options
+	if pruning.KeepEvery() == 0 && pruning.KeepRecent() == 0 {
+		iavlOpts = iavl.DefaultOptions()
+	} else {
+		iavlOpts = iavl.PruningOptions(pruning.KeepEvery(), pruning.KeepRecent())
+	}
+	tree := iavl.NewMutableTreeWithOpts(db, dbm.NewMemDB(), defaultIAVLCacheSize, iavlOpts)
 
 	var err error
 	if lazyLoading {
@@ -86,11 +91,13 @@ func (st *Store) GetImmutable(version int64) (*Store, error) {
 	if !st.VersionExists(version) {
 		return nil, iavl.ErrVersionDoesNotExist
 	}
+	fmt.Printf("GOT HERE!\n")
 
 	iTree, err := st.tree.GetImmutable(version)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("GOT THERE!\n")
 
 	return &Store{
 		tree:       &immutableTree{iTree},
@@ -108,16 +115,28 @@ func (st *Store) Commit() types.CommitID {
 		panic(err)
 	}
 
+	// Now done in IAVL repo as opposed to here
 	// Release an old version of history, if not a sync waypoint.
-	previous := version - 1
-	if st.numRecent < previous {
-		toRelease := previous - st.numRecent
-		if st.storeEvery == 0 || toRelease%st.storeEvery != 0 {
-			err := st.tree.DeleteVersion(toRelease)
-			if errCause := errors.Cause(err); errCause != nil && errCause != iavl.ErrVersionDoesNotExist {
-				panic(err)
-			}
-		}
+	// previous := version - 1
+	// if st.numRecent < previous {
+	// 	toRelease := previous - st.numRecent
+	// 	if st.storeEvery == 0 || toRelease%st.storeEvery != 0 {
+	// 		err := st.tree.DeleteVersion(toRelease)
+	// 		if errCause := errors.Cause(err); errCause != nil && errCause != iavl.ErrVersionDoesNotExist {
+	// 			panic(err)
+	// 		}
+	// 	}
+	// }
+
+	fmt.Printf("IAVL VERSION: %d\n", version)
+	fmt.Printf("IAVL HASH: %v\n", hash)
+	if hash == nil {
+		fmt.Printf("ROOTHASH is nil!\n")
+	}
+
+	_, err = st.GetImmutable(version)
+	if err != nil {
+		fmt.Printf("ERRORED!!! %s\n", err.Error())
 	}
 
 	return types.CommitID{

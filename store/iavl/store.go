@@ -91,13 +91,10 @@ func (st *Store) GetImmutable(version int64) (*Store, error) {
 	if !st.VersionExists(version) {
 		return nil, iavl.ErrVersionDoesNotExist
 	}
-	fmt.Printf("GOT HERE!\n")
-
 	iTree, err := st.tree.GetImmutable(version)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("GOT THERE!\n")
 
 	return &Store{
 		tree:       &immutableTree{iTree},
@@ -127,17 +124,6 @@ func (st *Store) Commit() types.CommitID {
 	// 		}
 	// 	}
 	// }
-
-	fmt.Printf("IAVL VERSION: %d\n", version)
-	fmt.Printf("IAVL HASH: %v\n", hash)
-	if hash == nil {
-		fmt.Printf("ROOTHASH is nil!\n")
-	}
-
-	_, err = st.GetImmutable(version)
-	if err != nil {
-		fmt.Printf("ERRORED!!! %s\n", err.Error())
-	}
 
 	return types.CommitID{
 		Version: version,

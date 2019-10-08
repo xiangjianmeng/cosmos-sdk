@@ -252,8 +252,6 @@ func (rs *Store) CacheMultiStoreWithVersion(version int64) (types.CacheMultiStor
 		case types.StoreTypeIAVL:
 			// Attempt to lazy-load an already saved IAVL store version. If the
 			// version does not exist or is pruned, an error should be returned.
-			fmt.Printf("STORE NAME: %s\n", key.Name())
-			fmt.Printf("VERSION: %d\n", version)
 			iavlStore, err := store.(*iavl.Store).GetImmutable(version)
 			if err != nil {
 				return nil, err
@@ -264,7 +262,6 @@ func (rs *Store) CacheMultiStoreWithVersion(version int64) (types.CacheMultiStor
 		default:
 			cachedStores[key] = store
 		}
-		fmt.Printf("STORE ITERATE: %s\n", key.Name())
 	}
 
 	return cachemulti.NewStore(rs.db, cachedStores, rs.keysByName, rs.traceWriter, rs.traceContext), nil
@@ -527,7 +524,6 @@ func commitStores(version int64, storeMap map[types.StoreKey]types.CommitStore) 
 	storeInfos := make([]storeInfo, 0, len(storeMap))
 
 	for key, store := range storeMap {
-		fmt.Printf("COMMIT STORE: %s\n", key.Name())
 		// Commit
 		commitID := store.Commit()
 

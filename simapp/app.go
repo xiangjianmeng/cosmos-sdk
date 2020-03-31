@@ -309,10 +309,7 @@ func NewSimApp(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetAnteHandler(
-		ante.NewAnteHandler(
-			app.AccountKeeper, app.SupplyKeeper, app.IBCKeeper,
-			ante.DefaultSigVerificationGasConsumer,
-		),
+		ante.NewAnteHandler(app.AccountKeeper, app.SupplyKeeper, app.IBCKeeper, ante.DefaultSigVerificationGasConsumer, nil, nil, ),
 	)
 	app.SetEndBlocker(app.EndBlocker)
 

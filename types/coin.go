@@ -30,9 +30,12 @@ func NewInt64Coin(denom string, amount int64) Coin {
 	return NewCoin(denom, NewInt(amount))
 }
 
+// TODO : printing the stdTx that contains msg before broadcasting will be wrong. It may rollback to the original way
+//  in cosmos-sdk, but common.parseCoin() depends on the modified way heavily
 // String provides a human-readable representation of a coin
 func (coin Coin) String() string {
-	return fmt.Sprintf("%v%v", coin.Amount, coin.Denom)
+	dec := NewDecFromIntWithPrec(coin.Amount, Precision)
+	return fmt.Sprintf("%s%v", dec, coin.Denom)
 }
 
 // validate returns an error if the Coin has a negative amount or if
@@ -231,6 +234,7 @@ func (coins Coins) IsValid() bool {
 // CONTRACT: Add will never return Coins where one Coin has a non-positive
 // amount. In otherwords, IsValid will always return true.
 func (coins Coins) Add(coinsB ...Coin) Coins {
+	coinsB = coinsB.Sort()
 	return coins.safeAdd(coinsB)
 }
 
@@ -240,7 +244,7 @@ func (coins Coins) Add(coinsB ...Coin) Coins {
 // denomination and addition only occurs when the denominations match, otherwise
 // the coin is simply added to the sum assuming it's not zero.
 func (coins Coins) safeAdd(coinsB Coins) Coins {
-	sum := ([]Coin)(nil)
+	sum := make([]Coin, 0, 201)
 	indexA, indexB := 0, 0
 	lenA, lenB := len(coins), len(coinsB)
 
@@ -593,9 +597,9 @@ var (
 // ValidateDenom validates a denomination string returning an error if it is
 // invalid.
 func ValidateDenom(denom string) error {
-	if !reDnm.MatchString(denom) {
-		return fmt.Errorf("invalid denom: %s", denom)
-	}
+	//if !reDnm.MatchString(denom) {
+	//	return fmt.Errorf("invalid denom: %s", denom)
+	//}
 	return nil
 }
 

@@ -17,6 +17,7 @@ type Keeper struct {
 	key    sdk.StoreKey
 	tkey   sdk.StoreKey
 	spaces map[string]*types.Subspace
+	paramSets map[string]types.ParamSet
 }
 
 // NewKeeper constructs a params keeper
@@ -26,6 +27,7 @@ func NewKeeper(cdc codec.Marshaler, key, tkey sdk.StoreKey) Keeper {
 		key:    key,
 		tkey:   tkey,
 		spaces: make(map[string]*types.Subspace),
+		paramSets:    make(map[string]types.ParamSet),
 	}
 }
 

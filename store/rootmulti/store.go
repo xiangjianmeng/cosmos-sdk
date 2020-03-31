@@ -10,6 +10,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	"github.com/tendermint/tendermint/crypto/tmhash"
+	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -205,6 +206,9 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 	}
 
 	rs.lastCommitInfo = cInfo
+	if ver == 0 {
+		rs.lastCommitInfo.Version = tmtypes.GetStartBlockHeight()
+	}
 	rs.stores = newStores
 
 	return nil
@@ -213,7 +217,7 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 func (rs *Store) getCommitID(infos map[string]storeInfo, name string) types.CommitID {
 	info, ok := infos[name]
 	if !ok {
-		return types.CommitID{}
+		return types.CommitID{Version: tmtypes.GetStartBlockHeight()}
 	}
 	return info.Core.CommitID
 }
@@ -504,7 +508,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		panic("recursive MultiStores not yet supported")
 
 	case types.StoreTypeIAVL:
-		store, err := iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading)
+		store, err := iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading, tmtypes.GetStartBlockHeight())
 		if err != nil {
 			return nil, err
 		}

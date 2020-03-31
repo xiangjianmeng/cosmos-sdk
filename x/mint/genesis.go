@@ -7,7 +7,7 @@ import (
 
 // InitGenesis new mint genesis
 func InitGenesis(ctx sdk.Context, keeper Keeper, supplyKeeper types.SupplyKeeper, data GenesisState) {
-	keeper.SetMinter(ctx, data.Minter)
+	//keeper.SetMinter(ctx, data.Minter)
 	keeper.SetParams(ctx, data.Params)
 
 	supplyKeeper.GetModuleAccount(ctx, ModuleName)
@@ -15,7 +15,8 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, supplyKeeper types.SupplyKeeper
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
 func ExportGenesis(ctx sdk.Context, keeper Keeper) GenesisState {
-	minter := keeper.GetMinter(ctx)
+	//minter := keeper.GetMinter(ctx)
 	params := keeper.GetParams(ctx)
+	var minter Minter
 	return NewGenesisState(minter, params)
 }

@@ -12,8 +12,8 @@ import (
 
 // NewParamChangeProposalHandler creates a new governance Handler for a ParamChangeProposal
 func NewParamChangeProposalHandler(k keeper.Keeper) govtypes.Handler {
-	return func(ctx sdk.Context, content govtypes.Content) error {
-		switch c := content.(type) {
+	return func(ctx sdk.Context, p *govtypes.Proposal) error {
+		switch c := p.Content.(type) {
 		case proposal.ParameterChangeProposal:
 			return handleParameterChangeProposal(ctx, k, c)
 

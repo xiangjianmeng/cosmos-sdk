@@ -194,7 +194,7 @@ var xxx_messageInfo_MsgVote proto.InternalMessageInfo
 type MsgDeposit struct {
 	ProposalID uint64                                        `protobuf:"varint,1,opt,name=proposal_id,json=proposalId,proto3" json:"proposal_id" yaml:"proposal_id"`
 	Depositor  github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,2,opt,name=depositor,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"depositor,omitempty"`
-	Amount     github_com_cosmos_cosmos_sdk_types.Coins      `protobuf:"bytes,3,rep,name=amount,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"amount"`
+	Amount     github_com_cosmos_cosmos_sdk_types.DecCoins      `protobuf:"bytes,3,rep,name=amount,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"amount"`
 }
 
 func (m *MsgDeposit) Reset()      { *m = MsgDeposit{} }
@@ -272,7 +272,7 @@ var xxx_messageInfo_TextProposal proto.InternalMessageInfo
 type Deposit struct {
 	ProposalID uint64                                        `protobuf:"varint,1,opt,name=proposal_id,json=proposalId,proto3" json:"proposal_id,omitempty" yaml:"proposal_id"`
 	Depositor  github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,2,opt,name=depositor,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"depositor,omitempty"`
-	Amount     github_com_cosmos_cosmos_sdk_types.Coins      `protobuf:"bytes,3,rep,name=amount,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"amount"`
+	Amount     github_com_cosmos_cosmos_sdk_types.DecCoins      `protobuf:"bytes,3,rep,name=amount,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"amount"`
 }
 
 func (m *Deposit) Reset()      { *m = Deposit{} }
@@ -316,7 +316,7 @@ type ProposalBase struct {
 	FinalTallyResult TallyResult                              `protobuf:"bytes,3,opt,name=final_tally_result,json=finalTallyResult,proto3" json:"final_tally_result" yaml:"final_tally_result"`
 	SubmitTime       time.Time                                `protobuf:"bytes,4,opt,name=submit_time,json=submitTime,proto3,stdtime" json:"submit_time" yaml:"submit_time"`
 	DepositEndTime   time.Time                                `protobuf:"bytes,5,opt,name=deposit_end_time,json=depositEndTime,proto3,stdtime" json:"deposit_end_time" yaml:"deposit_end_time"`
-	TotalDeposit     github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,6,rep,name=total_deposit,json=totalDeposit,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"total_deposit" yaml:"total_deposit"`
+	TotalDeposit     github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,6,rep,name=total_deposit,json=totalDeposit,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"total_deposit" yaml:"total_deposit"`
 	VotingStartTime  time.Time                                `protobuf:"bytes,7,opt,name=voting_start_time,json=votingStartTime,proto3,stdtime" json:"voting_start_time" yaml:"voting_start_time"`
 	VotingEndTime    time.Time                                `protobuf:"bytes,8,opt,name=voting_end_time,json=votingEndTime,proto3,stdtime" json:"voting_end_time" yaml:"voting_end_time"`
 }
@@ -356,10 +356,12 @@ var xxx_messageInfo_ProposalBase proto.InternalMessageInfo
 
 // TallyResult defines a standard tally for a proposal
 type TallyResult struct {
-	Yes        github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,1,opt,name=yes,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"yes"`
-	Abstain    github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=abstain,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"abstain"`
-	No         github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,3,opt,name=no,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"no"`
-	NoWithVeto github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=no_with_veto,json=noWithVeto,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"no_with_veto" yaml:"no_with_veto"`
+	Yes        github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,1,opt,name=yes,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"yes"`
+	Abstain    github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,2,opt,name=abstain,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"abstain"`
+	No         github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,3,opt,name=no,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"no"`
+	NoWithVeto github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,4,opt,name=no_with_veto,json=noWithVeto,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"no_with_veto" yaml:"no_with_veto"`
+	TotalPower github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,5,opt,name=yes,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"total_power"`
+	TotalVotedPower github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,6,opt,name=yes,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"total_voted_power"`
 }
 
 func (m *TallyResult) Reset()      { *m = TallyResult{} }

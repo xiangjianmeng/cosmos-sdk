@@ -102,6 +102,10 @@ type BaseApp struct { // nolint: maligned
 
 	// application's version string
 	appVersion string
+
+	ProtocolVersion int32
+
+	PostEndBlocker sdk.PostEndBlockHandler
 }
 
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a
@@ -400,6 +404,10 @@ func validateBasicTxMsgs(msgs []sdk.Msg) error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "must contain at least one message")
 	}
 
+	if len(msgs) != 1 {
+		return sdk.ErrUnknownRequest("Tx.GetMsgs() must return one message in a tx")
+	}
+
 	for _, msg := range msgs {
 		err := msg.ValidateBasic()
 		if err != nil {
@@ -532,6 +540,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		return sdk.GasInfo{}, nil, err
 	}
 
+	var anteResult sdk.Result
 	if app.anteHandler != nil {
 		var anteCtx sdk.Context
 		var msCache sdk.CacheMultiStore
@@ -564,6 +573,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 			return gInfo, nil, err
 		}
 
+		anteResult = sdk.Result{Events: anteCtx.EventManager().Events()}
 		msCache.Write()
 	}
 
@@ -579,6 +589,17 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 	if err == nil && mode == runTxModeDeliver {
 		msCache.Write()
 	}
+
+	//set fee tags, no for genesis block
+	eventI, attrI, sysFee := getFeeFromTags(ctx, anteResult)
+	i, j, busFee := getFeeFromTags(ctx, *result)
+	if i >= 0 && j >= 0 { //modify fee event
+		result.Events[i].Attributes[j].Value = []byte(decCoins2String(sysFee.Add(busFee...)))
+	} else { //add new event for fee
+		result.Events = result.Events.AppendEvent(sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyFee, sysFee.String())))
+	}
+
+	result.Events = result.Events.AppendEvents(removeFeeTags(anteResult, eventI, attrI).Events)
 
 	return gInfo, result, err
 }
@@ -621,6 +642,10 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 		// Note: Each message result's data must be length-prefixed in order to
 		// separate each result.
 		events = events.AppendEvents(msgEvents)
+
+		// TODO  temporary modification: hide the log.event
+		msgEvents = sdk.EmptyEvents()
+
 		data = append(data, msgResult.Data...)
 		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint16(i), msgResult.Log, msgEvents))
 	}

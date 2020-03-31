@@ -13,13 +13,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/rpc/client"
 	rpcserver "github.com/tendermint/tendermint/rpc/lib/server"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/server"
-
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/lcd/statik"
 )
@@ -28,30 +28,38 @@ import (
 type RestServer struct {
 	Mux    *mux.Router
 	CliCtx context.CLIContext
+	Cdc    *codec.Codec
 
 	log      log.Logger
 	listener net.Listener
 }
 
 // NewRestServer creates a new rest server instance
-func NewRestServer(cdc *codec.Codec) *RestServer {
+func NewRestServer(cdc *codec.Codec,  tmNode *node.Node) *RestServer {
 	r := mux.NewRouter()
 	cliCtx := context.NewCLIContext().WithCodec(cdc)
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "rest-server")
 
+	if tmNode != nil {
+		cliCtx.Client = client.NewLocal(tmNode)
+	}
+
+	cliCtx.TrustNode = true
+
 	return &RestServer{
 		Mux:    r,
 		CliCtx: cliCtx,
+		Cdc:    cdc,
 		log:    logger,
 	}
 }
 
 // Start starts the rest server
 func (rs *RestServer) Start(listenAddr string, maxOpen int, readTimeout, writeTimeout uint, cors bool) (err error) {
-	server.TrapSignal(func() {
-		err := rs.listener.Close()
-		rs.log.Error("error closing listener", "err", err)
-	})
+	//server.TrapSignal(func() {
+	//	err := rs.listener.Close()
+	//	rs.log.Error("error closing listener", "err", err)
+	//})
 
 	cfg := rpcserver.DefaultConfig()
 	cfg.MaxOpenConnections = maxOpen
@@ -85,7 +93,7 @@ func ServeCommand(cdc *codec.Codec, registerRoutesFn func(*RestServer)) *cobra.C
 		Use:   "rest-server",
 		Short: "Start LCD (light-client daemon), a local REST server",
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			rs := NewRestServer(cdc)
+			rs := NewRestServer(cdc, nil)
 
 			registerRoutesFn(rs)
 			rs.registerSwaggerUI()
@@ -105,6 +113,25 @@ func ServeCommand(cdc *codec.Codec, registerRoutesFn func(*RestServer)) *cobra.C
 
 	return flags.RegisterRestServerFlags(cmd)
 }
+
+func StartRestServer(cdc *codec.Codec, registerRoutesFn func(*RestServer), tmNode *node.Node, addr string) error {
+	rs := NewRestServer(cdc, tmNode)
+
+	registerRoutesFn(rs)
+	rs.registerSwaggerUI()
+	rs.log.Info("start rest server")
+	// Start the rest server and return error if one exists
+	err := rs.Start(
+		addr,
+		viper.GetInt(flags.FlagMaxOpenConnections),
+		uint(viper.GetInt(flags.FlagRPCReadTimeout)),
+		uint(viper.GetInt(flags.FlagRPCWriteTimeout)),
+		viper.GetBool(flags.FlagUnsafeCORS),
+	)
+
+	return err
+}
+
 
 func (rs *RestServer) registerSwaggerUI() {
 	statikFS, err := fs.New()

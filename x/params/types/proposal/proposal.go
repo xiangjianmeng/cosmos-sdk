@@ -17,10 +17,10 @@ const (
 // Assert ParameterChangeProposal implements govtypes.Content at compile-time
 var _ govtypes.Content = ParameterChangeProposal{}
 
-func init() {
-	govtypes.RegisterProposalType(ProposalTypeChange)
-	govtypes.RegisterProposalTypeCodec(ParameterChangeProposal{}, "cosmos-sdk/ParameterChangeProposal")
-}
+//func init() {
+//	govtypes.RegisterProposalType(ProposalTypeChange)
+//	govtypes.RegisterProposalTypeCodec(ParameterChangeProposal{}, "cosmos-sdk/ParameterChangeProposal")
+//}
 
 func NewParameterChangeProposal(title, description string, changes []ParamChange) ParameterChangeProposal {
 	return ParameterChangeProposal{title, description, changes}

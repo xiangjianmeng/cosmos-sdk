@@ -3,7 +3,7 @@ package cosmos_sdk.x.mint.v1;
 
 option go_package = "types";
 
-import "third_party/proto/gogoproto/gogo.proto";
+import "gogoproto/gogo.proto";
 
 // Minter represents the minting state.
 message Minter {
@@ -15,6 +15,21 @@ message Minter {
     (gogoproto.moretags)   = "yaml:\"annual_provisions\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
+  ];
+}
+
+message MinterCustom {
+  uint64 next_block_to_update = 1 [(gogoproto.moretags) = "yaml:\"next_block_to_update\""];
+  // current annual expected provisions
+  string annual_provisions = 2 [
+    (gogoproto.moretags)   = "yaml:\"annual_provisions\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable)   = false
+  ];
+  string minted_per_block = 3 [
+      (gogoproto.moretags)   = "yaml:\"minted_per_block\"",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coins",
+      (gogoproto.nullable)   = false
   ];
 }
 
@@ -31,23 +46,23 @@ message Params {
     (gogoproto.nullable)   = false
   ];
   // maximum inflation rate
-  string inflation_max = 3 [
-    (gogoproto.moretags)   = "yaml:\"inflation_max\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable)   = false
-  ];
-  // minimum inflation rate
-  string inflation_min = 4 [
-    (gogoproto.moretags)   = "yaml:\"inflation_min\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable)   = false
-  ];
-  // goal of percent bonded atoms
-  string goal_bonded = 5 [
-    (gogoproto.moretags)   = "yaml:\"goal_bonded\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable)   = false
-  ];
+  // string inflation_max = 3 [
+  //   (gogoproto.moretags)   = "yaml:\"inflation_max\"",
+  //   (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+  //   (gogoproto.nullable)   = false
+  // ];
+  // // minimum inflation rate
+  // string inflation_min = 4 [
+  //   (gogoproto.moretags)   = "yaml:\"inflation_min\"",
+  //   (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+  //   (gogoproto.nullable)   = false
+  // ];
+  // // goal of percent bonded atoms
+  // string goal_bonded = 5 [
+  //   (gogoproto.moretags)   = "yaml:\"goal_bonded\"",
+  //   (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+  //   (gogoproto.nullable)   = false
+  // ];
   // expected blocks per year
-  uint64 blocks_per_year = 6 [(gogoproto.moretags) = "yaml:\"blocks_per_year\""];
+  uint64 blocks_per_year = 3 [(gogoproto.moretags) = "yaml:\"blocks_per_year\""];
 }

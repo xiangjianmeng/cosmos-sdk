@@ -209,7 +209,10 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 
 		// verify signature
 		if !simulate && !pubKey.VerifyBytes(signBytes, sig) {
-			return ctx, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "signature verification failed; verify correct account sequence and chain-id")
+			ctx.Logger().Info("signData:" + string(signBytes))
+			return ctx, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "signature verification failed; " +
+				"verify correct account sequence, chain-id and message format. " +
+				"Expected message format: " + string(signBytes))
 		}
 	}
 

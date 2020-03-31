@@ -16,6 +16,9 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	pvm "github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
+
+	"github.com/cosmos/cosmos-sdk/client/lcd"
+	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 // Tendermint full-node start flags
@@ -47,7 +50,7 @@ var (
 
 // StartCmd runs the service passed in, either stand-alone or in-process with
 // Tendermint.
-func StartCmd(ctx *Context, appCreator AppCreator) *cobra.Command {
+func StartCmd(ctx *Context, cdc *codec.Codec, appCreator AppCreator, registerRoutesFn func(restServer *lcd.RestServer)) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
 		Short: "Run the full node",
@@ -82,8 +85,12 @@ which accepts a path for the resulting pprof file.
 
 			ctx.Logger.Info("starting ABCI with Tendermint")
 
-			_, err := startInProcess(ctx, appCreator)
-			return err
+			setPID(ctx)
+			_, err := startInProcess(ctx, cdc, appCreator, registerRoutesFn)
+			if err != nil {
+				tmos.Exit(err.Error())
+			}
+			return nil
 		},
 	}
 
@@ -104,6 +111,9 @@ which accepts a path for the resulting pprof file.
 	cmd.Flags().Bool(FlagInterBlockCache, true, "Enable inter-block caching")
 	cmd.Flags().String(flagCPUProfile, "", "Enable CPU profiling and write to the provided file")
 
+	registerRestServerFlags(cmd)
+
+	registerOkchainPluginFlags(cmd)
 	// add support for all Tendermint-specific command line options
 	tcmd.AddNodeFlags(cmd)
 	return cmd
@@ -170,9 +180,13 @@ func startStandAlone(ctx *Context, appCreator AppCreator) error {
 	select {}
 }
 
-func startInProcess(ctx *Context, appCreator AppCreator) (*node.Node, error) {
+func startInProcess(ctx *Context, cdc *codec.Codec, appCreator AppCreator, registerRoutesFn func(restServer *lcd.RestServer)) (*node.Node, error) {
 	cfg := ctx.Config
 	home := cfg.RootDir
+
+	if err := callHooker(FlagHookstartInProcess, ctx); err != nil {
+		return nil, err
+	}
 
 	traceWriterFile := viper.GetString(flagTraceStore)
 	db, err := openDB(home)
@@ -244,6 +258,10 @@ func startInProcess(ctx *Context, appCreator AppCreator) (*node.Node, error) {
 
 		ctx.Logger.Info("exiting...")
 	})
+
+	if registerRoutesFn != nil {
+		go lcd.StartRestServer(cdc, registerRoutesFn, tmNode, viper.GetString(FlagListenAddr))
+	}
 
 	// run forever (the node will not be returned)
 	select {}

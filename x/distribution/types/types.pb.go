@@ -629,10 +629,10 @@ func (m *FeePool) GetCommunityPool() github_com_cosmos_cosmos_sdk_types.DecCoins
 
 // CommunityPoolSpendProposal spends from the community pool
 type CommunityPoolSpendProposal struct {
-	Title       string                                        `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
-	Description string                                        `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	Recipient   github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,3,opt,name=recipient,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"recipient,omitempty"`
-	Amount      github_com_cosmos_cosmos_sdk_types.Coins      `protobuf:"bytes,4,rep,name=amount,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"amount"`
+	Title       string                                           `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Description string                                           `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Recipient   github_com_cosmos_cosmos_sdk_types.AccAddress    `protobuf:"bytes,3,opt,name=recipient,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"recipient,omitempty"`
+	Amount      github_com_cosmos_cosmos_sdk_types.DecCoins      `protobuf:"bytes,4,rep,name=amount,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"amount"`
 }
 
 func (m *CommunityPoolSpendProposal) Reset()      { *m = CommunityPoolSpendProposal{} }

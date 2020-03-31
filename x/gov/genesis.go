@@ -2,6 +2,7 @@ package gov
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/x/gov/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -20,7 +21,7 @@ func InitGenesis(ctx sdk.Context, bk types.BankKeeper, supplyKeeper types.Supply
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
 	}
 
-	var totalDeposits sdk.Coins
+	var totalDeposits sdk.DecCoins
 	for _, deposit := range data.Deposits {
 		k.SetDeposit(ctx, deposit)
 		totalDeposits = totalDeposits.Add(deposit.Amount...)
@@ -42,7 +43,7 @@ func InitGenesis(ctx sdk.Context, bk types.BankKeeper, supplyKeeper types.Supply
 
 	// add coins if not provided on genesis
 	if bk.GetAllBalances(ctx, moduleAcc.GetAddress()).IsZero() {
-		if err := bk.SetBalances(ctx, moduleAcc.GetAddress(), totalDeposits); err != nil {
+		if err := bk.SetBalances(ctx, moduleAcc.GetAddress(), keeper.ConvertDecCoinsToCoins(totalDeposits)); err != nil {
 			panic(err)
 		}
 		supplyKeeper.SetModuleAccount(ctx, moduleAcc)

@@ -120,3 +120,51 @@ func isRunningUnattended() bool {
 	backends := keyring.AvailableBackends()
 	return len(backends) == 2 && backends[1] == keyring.BackendType("file")
 }
+
+// NewKeyBaseFromHomeFlag initializes a Keybase based on the configuration.
+func NewKeyBaseFromHomeFlag() (keys.Keybase, error) {
+	rootDir := viper.GetString(flags.FlagHome)
+	return NewKeyBaseFromDir(rootDir)
+}
+
+// GetKeyInfo returns key info for a given name. An error is returned if the
+// keybase cannot be retrieved or getting the info fails.
+func GetKeyInfo(name string) (keys.Info, error) {
+	keybase, err := NewKeyBaseFromHomeFlag()
+	if err != nil {
+		return nil, err
+	}
+
+	return keybase.Get(name)
+}
+
+// GetPassphrase returns a passphrase for a given name. It will first retrieve
+// the key info for that name if the type is local, it'll fetch input from
+// STDIN. Otherwise, an empty passphrase is returned. An error is returned if
+// the key info cannot be fetched or reading from STDIN fails.
+func GetPassphrase(name string) (string, error) {
+	var passphrase string
+
+	keyInfo, err := GetKeyInfo(name)
+	if err != nil {
+		return passphrase, err
+	}
+
+	// we only need a passphrase for locally stored keys
+	// TODO: (ref: #864) address security concerns
+	if keyInfo.GetType() == keys.TypeLocal {
+		passphrase, err = ReadPassphraseFromStdin(name)
+		if err != nil {
+			return passphrase, err
+		}
+	}
+
+	return passphrase, nil
+}
+
+// ReadPassphraseFromStdin attempts to read a passphrase from STDIN return an
+// error upon failure.
+func ReadPassphraseFromStdin(name string) (string, error) {
+	passphrase := viper.GetString(FlagKeyPass)
+	return passphrase, nil
+}

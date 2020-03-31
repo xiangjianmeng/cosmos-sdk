@@ -45,7 +45,7 @@ func SimulateCommunityPoolSpendProposalContent(k keeper.Keeper) simtypes.Content
 			simtypes.RandStringOfLength(r, 10),
 			simtypes.RandStringOfLength(r, 100),
 			simAccount.Address,
-			sdk.NewCoins(sdk.NewCoin(balance[denomIndex].Denom, amount)),
+			sdk.NewDecCoins(sdk.NewDecCoin(balance[denomIndex].Denom, amount)),
 		)
 	}
 }

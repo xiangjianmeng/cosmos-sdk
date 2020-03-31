@@ -16,11 +16,11 @@ type Codec interface {
 // governance module.
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterInterface((*Content)(nil), nil)
-	cdc.RegisterConcrete(MsgSubmitProposalBase{}, "cosmos-sdk/MsgSubmitProposalBase", nil)
-	cdc.RegisterConcrete(MsgSubmitProposal{}, "cosmos-sdk/MsgSubmitProposal", nil)
-	cdc.RegisterConcrete(MsgDeposit{}, "cosmos-sdk/MsgDeposit", nil)
-	cdc.RegisterConcrete(MsgVote{}, "cosmos-sdk/MsgVote", nil)
-	cdc.RegisterConcrete(TextProposal{}, "cosmos-sdk/TextProposal", nil)
+	cdc.RegisterConcrete(MsgSubmitProposalBase{}, "okchain/gov/MsgSubmitProposalBase", nil)
+	cdc.RegisterConcrete(MsgSubmitProposal{}, "okchain/gov/MsgSubmitProposal", nil)
+	cdc.RegisterConcrete(MsgDeposit{}, "okchain/gov/MsgDeposit", nil)
+	cdc.RegisterConcrete(MsgVote{}, "okchain/gov/MsgVote", nil)
+	cdc.RegisterConcrete(TextProposal{}, "okchain/gov/TextProposal", nil)
 }
 
 // RegisterProposalTypeCodec registers an external proposal content type defined

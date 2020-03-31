@@ -102,8 +102,13 @@ func CompleteAndBroadcastTxCLI(txBldr authtypes.TxBuilder, cliCtx context.CLICon
 		}
 	}
 
+	passphrase, err := keys.GetPassphrase(fromName)
+	if err != nil {
+		return err
+	}
+
 	// build and sign the transaction
-	txBytes, err := txBldr.BuildAndSign(fromName, keys.DefaultKeyPass, msgs)
+	txBytes, err := txBldr.BuildAndSign(fromName, passphrase, msgs)
 	if err != nil {
 		return err
 	}
@@ -201,7 +206,12 @@ func SignStdTx(
 		}
 	}
 
-	return txBldr.SignStdTx(name, keys.DefaultKeyPass, stdTx, appendSig)
+	passphrase, err := keys.GetPassphrase(name)
+	if err != nil {
+		return signedStdTx, err
+	}
+
+	return txBldr.SignStdTx(name, passphrase, stdTx, appendSig)
 }
 
 // SignStdTxWithSignerAddress attaches a signature to a StdTx and returns a copy of a it.
@@ -224,7 +234,12 @@ func SignStdTxWithSignerAddress(
 		}
 	}
 
-	return txBldr.SignStdTx(name, keys.DefaultKeyPass, stdTx, false)
+	passphrase, err := keys.GetPassphrase(name)
+	if err != nil {
+		return signedStdTx, err
+	}
+
+	return txBldr.SignStdTx(name, passphrase, stdTx, false)
 }
 
 // Read and decode a StdTx from the given filename.  Can pass "-" to read from stdin.

@@ -40,7 +40,7 @@ type (
 		Description string           `json:"description" yaml:"description"`
 		Changes     ParamChangesJSON `json:"changes" yaml:"changes"`
 		Proposer    sdk.AccAddress   `json:"proposer" yaml:"proposer"`
-		Deposit     sdk.Coins        `json:"deposit" yaml:"deposit"`
+		Deposit     sdk.DecCoins        `json:"deposit" yaml:"deposit"`
 	}
 )
 

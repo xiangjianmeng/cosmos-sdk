@@ -20,10 +20,14 @@ var (
 // If ValidateBasic passes, decorator calls next AnteHandler in chain. Note,
 // ValidateBasicDecorator decorator will not get executed on ReCheckTx since it
 // is not dependent on application state.
-type ValidateBasicDecorator struct{}
+type ValidateBasicDecorator struct{
+	validateMsgHandler ValidateMsgHandler
+}
 
-func NewValidateBasicDecorator() ValidateBasicDecorator {
-	return ValidateBasicDecorator{}
+func NewValidateBasicDecorator(validateMsgHandler ValidateMsgHandler) ValidateBasicDecorator {
+	return ValidateBasicDecorator{
+		validateMsgHandler: validateMsgHandler,
+	}
 }
 
 func (vbd ValidateBasicDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
@@ -33,6 +37,15 @@ func (vbd ValidateBasicDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulat
 	}
 	if err := tx.ValidateBasic(); err != nil {
 		return ctx, err
+	}
+
+	// *ABORT* the tx in case of failing to validate it in checkTx mode
+	if ctx.IsCheckTx() && !simulate {
+		if vbd.validateMsgHandler != nil {
+			if err := vbd.validateMsgHandler(ctx, tx.GetMsgs()); err != nil {
+				return ctx, err
+			}
+		}
 	}
 
 	return next(ctx, tx, simulate)

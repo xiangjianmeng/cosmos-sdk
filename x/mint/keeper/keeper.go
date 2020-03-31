@@ -116,3 +116,35 @@ func (k Keeper) MintCoins(ctx sdk.Context, newCoins sdk.Coins) error {
 func (k Keeper) AddCollectedFees(ctx sdk.Context, fees sdk.Coins) error {
 	return k.supplyKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, fees)
 }
+
+// get the minter custom
+func (k Keeper) GetMinterCustom(ctx sdk.Context) (minter types.MinterCustom) {
+	store := ctx.KVStore(k.storeKey)
+	b := store.Get(types.MinterKey)
+	if b != nil {
+		k.cdc.MustUnmarshalBinaryLengthPrefixed(b, &minter)
+	}
+
+	return
+}
+
+// set the minter custom
+func (k Keeper) SetMinterCustom(ctx sdk.Context, minter types.MinterCustom) {
+	store := ctx.KVStore(k.storeKey)
+	b := k.cdc.MustMarshalBinaryLengthPrefixed(minter)
+	store.Set(types.MinterKey, b)
+}
+
+func (k Keeper) UpdateMinterCustom(ctx sdk.Context, minter *types.MinterCustom, params types.Params) {
+	//
+	totalStakingSupply := k.StakingTokenSupply(ctx)
+	annualProvisions := params.InflationRate.MulInt(totalStakingSupply)
+	provisionAmtPerBlock := annualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
+
+	// update new MinterCustom
+	minter.MintedPerBlock = sdk.NewCoins(sdk.NewCoin(params.MintDenom, provisionAmtPerBlock.TruncateInt()))
+	minter.NextBlockToUpdate += params.BlocksPerYear
+	minter.AnnualProvisions = annualProvisions
+	k.SetMinterCustom(ctx, *minter)
+}
+

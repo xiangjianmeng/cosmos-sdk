@@ -29,7 +29,7 @@ func NewValidatorGovInfo(address sdk.ValAddress, bondedTokens sdk.Int, delegator
 }
 
 // NewTallyResult creates a new TallyResult instance
-func NewTallyResult(yes, abstain, no, noWithVeto sdk.Int) TallyResult {
+func NewTallyResult(yes, abstain, no, noWithVeto sdk.Dec) TallyResult {
 	return TallyResult{
 		Yes:        yes,
 		Abstain:    abstain,
@@ -41,16 +41,19 @@ func NewTallyResult(yes, abstain, no, noWithVeto sdk.Int) TallyResult {
 // NewTallyResultFromMap creates a new TallyResult instance from a Option -> Dec map
 func NewTallyResultFromMap(results map[VoteOption]sdk.Dec) TallyResult {
 	return NewTallyResult(
-		results[OptionYes].TruncateInt(),
-		results[OptionAbstain].TruncateInt(),
-		results[OptionNo].TruncateInt(),
-		results[OptionNoWithVeto].TruncateInt(),
+		results[OptionYes],
+		results[OptionAbstain],
+		results[OptionNo],
+		results[OptionNoWithVeto],
 	)
 }
 
 // EmptyTallyResult returns an empty TallyResult.
-func EmptyTallyResult() TallyResult {
-	return NewTallyResult(sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroInt())
+func EmptyTallyResult(totalVoting sdk.Dec) TallyResult {
+	tallyRes := NewTallyResult(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec())
+	tallyRes.TotalPower = totalVoting
+	tallyRes.TotalVotedPower = sdk.ZeroDec()
+	return tallyRes
 }
 
 // Equals returns if two proposals are equal.

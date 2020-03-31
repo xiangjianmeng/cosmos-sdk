@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -74,7 +75,7 @@ func (msg MsgSubmitProposalBase) String() string {
 }
 
 // NewMsgDeposit creates a new MsgDeposit instance
-func NewMsgDeposit(depositor sdk.AccAddress, proposalID uint64, amount sdk.Coins) MsgDeposit {
+func NewMsgDeposit(depositor sdk.AccAddress, proposalID uint64, amount sdk.DecCoins) MsgDeposit {
 	return MsgDeposit{proposalID, depositor, amount}
 }
 
@@ -168,14 +169,14 @@ func (msg MsgVote) GetSigners() []sdk.AccAddress {
 // TODO: Remove once client-side Protobuf migration has been completed.
 type MsgSubmitProposal struct {
 	Content        Content        `json:"content" yaml:"content"`
-	InitialDeposit sdk.Coins      `json:"initial_deposit" yaml:"initial_deposit"` //  Initial deposit paid by sender. Must be strictly positive
+	InitialDeposit sdk.DecCoins      `json:"initial_deposit" yaml:"initial_deposit"` //  Initial deposit paid by sender. Must be strictly positive
 	Proposer       sdk.AccAddress `json:"proposer" yaml:"proposer"`               //  Address of the proposer
 }
 
 // NewMsgSubmitProposal returns a (deprecated) MsgSubmitProposal message.
 //
 // TODO: Remove once client-side Protobuf migration has been completed.
-func NewMsgSubmitProposal(content Content, initialDeposit sdk.Coins, proposer sdk.AccAddress) MsgSubmitProposal {
+func NewMsgSubmitProposal(content Content, initialDeposit sdk.DecCoins, proposer sdk.AccAddress) MsgSubmitProposal {
 	return MsgSubmitProposal{content, initialDeposit, proposer}
 }
 
@@ -193,6 +194,12 @@ func (msg MsgSubmitProposal) ValidateBasic() error {
 	if msg.InitialDeposit.IsAnyNegative() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, msg.InitialDeposit.String())
 	}
+
+	if len(msg.InitialDeposit) != 1 || msg.InitialDeposit[0].Denom != sdk.DefaultBondDenom || !msg.InitialDeposit.IsValid() {
+		return sdk.ErrInvalidCoins(fmt.Sprintf("must deposit %s but got %s", sdk.DefaultBondDenom,
+			msg.InitialDeposit.String()))
+	}
+
 	if !IsValidProposalType(msg.Content.ProposalType()) {
 		return sdkerrors.Wrap(ErrInvalidProposalType, msg.Content.ProposalType())
 	}

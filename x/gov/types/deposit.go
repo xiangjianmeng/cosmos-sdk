@@ -9,7 +9,7 @@ import (
 )
 
 // NewDeposit creates a new Deposit instance
-func NewDeposit(proposalID uint64, depositor sdk.AccAddress, amount sdk.Coins) Deposit {
+func NewDeposit(proposalID uint64, depositor sdk.AccAddress, amount sdk.DecCoins) Deposit {
 	return Deposit{proposalID, depositor, amount}
 }
 

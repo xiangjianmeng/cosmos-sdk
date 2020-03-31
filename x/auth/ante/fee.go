@@ -73,14 +73,17 @@ func (mfd MempoolFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 // Call next AnteHandler if fees successfully deducted
 // CONTRACT: Tx must implement FeeTx interface to use DeductFeeDecorator
 type DeductFeeDecorator struct {
-	ak           keeper.AccountKeeper
-	supplyKeeper types.SupplyKeeper
+	ak                  keeper.AccountKeeper
+	supplyKeeper        types.SupplyKeeper
+	isSystemFreeHandler IsSystemFreeHandler
 }
 
-func NewDeductFeeDecorator(ak keeper.AccountKeeper, sk types.SupplyKeeper) DeductFeeDecorator {
+func NewDeductFeeDecorator(ak keeper.AccountKeeper, sk types.SupplyKeeper, isSystemFreeHandler IsSystemFreeHandler,
+) DeductFeeDecorator {
 	return DeductFeeDecorator{
-		ak:           ak,
-		supplyKeeper: sk,
+		ak:                  ak,
+		supplyKeeper:        sk,
+		isSystemFreeHandler: isSystemFreeHandler,
 	}
 }
 
@@ -102,11 +105,23 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	}
 
 	// deduct the fees
-	if !feeTx.GetFee().IsZero() {
-		err = DeductFees(dfd.supplyKeeper, ctx, feePayerAcc, feeTx.GetFee())
-		if err != nil {
-			return ctx, err
+	var actualSysFee = GetSystemFee()
+	msgs := tx.GetMsgs()
+	if dfd.isSystemFreeHandler != nil {
+		if dfd.isSystemFreeHandler(ctx, msgs) {
+			actualSysFee = ZeroFee()
+		} else {
+			err = DeductFees(dfd.supplyKeeper, ctx, feePayerAcc, GetSysFeeCoins())
+			if err != nil {
+				return ctx, err
+			}
 		}
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				sdk.EventTypeMessage,
+				sdk.NewAttribute(sdk.AttributeKeyFee, actualSysFee.String()),
+			),
+		)
 	}
 
 	return next(ctx, tx, simulate)

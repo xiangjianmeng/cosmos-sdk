@@ -78,7 +78,7 @@ func (logs ABCIMessageLogs) String() (str string) {
 // TxResponse defines a structure containing relevant tx data and metadata. The
 // tags are stringified and the log is JSON decoded.
 type TxResponse struct {
-	Height    int64           `json:"height"`
+	Height    int64           `json:"height,omitempty"`
 	TxHash    string          `json:"txhash"`
 	Codespace string          `json:"codespace,omitempty"`
 	Code      uint32          `json:"code,omitempty"`
@@ -86,8 +86,8 @@ type TxResponse struct {
 	RawLog    string          `json:"raw_log,omitempty"`
 	Logs      ABCIMessageLogs `json:"logs,omitempty"`
 	Info      string          `json:"info,omitempty"`
-	GasWanted int64           `json:"gas_wanted,omitempty"`
-	GasUsed   int64           `json:"gas_used,omitempty"`
+	GasWanted int64           `json:"_"`
+	GasUsed   int64           `json:"_"`
 	Tx        Tx              `json:"tx,omitempty"`
 	Timestamp string          `json:"timestamp,omitempty"`
 }
@@ -224,12 +224,12 @@ func (r TxResponse) String() string {
 	if r.Info != "" {
 		sb.WriteString(fmt.Sprintf("  Info: %s\n", r.Info))
 	}
-	if r.GasWanted != 0 {
-		sb.WriteString(fmt.Sprintf("  GasWanted: %d\n", r.GasWanted))
-	}
-	if r.GasUsed != 0 {
-		sb.WriteString(fmt.Sprintf("  GasUsed: %d\n", r.GasUsed))
-	}
+	//if r.GasWanted != 0 {
+	//	sb.WriteString(fmt.Sprintf("  GasWanted: %d\n", r.GasWanted))
+	//}
+	//if r.GasUsed != 0 {
+	//	sb.WriteString(fmt.Sprintf("  GasUsed: %d\n", r.GasUsed))
+	//}
 	if r.Codespace != "" {
 		sb.WriteString(fmt.Sprintf("  Codespace: %s\n", r.Codespace))
 	}

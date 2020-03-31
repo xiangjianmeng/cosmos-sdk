@@ -26,8 +26,8 @@ func GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	mintingQueryCmd.AddCommand(
 		flags.GetCommands(
 			GetCmdQueryParams(cdc),
-			GetCmdQueryInflation(cdc),
-			GetCmdQueryAnnualProvisions(cdc),
+			//GetCmdQueryInflation(cdc),
+			//GetCmdQueryAnnualProvisions(cdc),
 		)...,
 	)
 

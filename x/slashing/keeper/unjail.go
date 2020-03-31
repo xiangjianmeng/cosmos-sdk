@@ -13,15 +13,19 @@ func (k Keeper) Unjail(ctx sdk.Context, validatorAddr sdk.ValAddress) error {
 		return types.ErrNoValidatorForAddress
 	}
 
-	// cannot be unjailed if no self-delegation exists
-	selfDel := k.sk.Delegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr)
-	if selfDel == nil {
+	if validator.GetMinSelfDelegation().IsZero() {
 		return types.ErrMissingSelfDelegation
 	}
 
-	if validator.TokensFromShares(selfDel.GetShares()).TruncateInt().LT(validator.GetMinSelfDelegation()) {
-		return types.ErrSelfDelegationTooLowToUnjail
-	}
+	//// cannot be unjailed if no self-delegation exists
+	//selfDel := k.sk.Delegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr)
+	//if selfDel == nil {
+	//	return types.ErrMissingSelfDelegation
+	//}
+	//
+	//if validator.TokensFromShares(selfDel.GetShares()).TruncateInt().LT(validator.GetMinSelfDelegation()) {
+	//	return types.ErrSelfDelegationTooLowToUnjail
+	//}
 
 	// cannot be unjailed if not jailed
 	if !validator.IsJailed() {

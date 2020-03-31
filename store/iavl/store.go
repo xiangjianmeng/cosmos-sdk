@@ -39,7 +39,7 @@ type Store struct {
 // LoadStore returns an IAVL Store as a CommitKVStore. Internally, it will load the
 // store's version (id) from the provided DB. An error is returned if the version
 // fails to load.
-func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool) (types.CommitKVStore, error) {
+func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool, startVersion int64) (types.CommitKVStore, error) {
 	if !pruning.IsValid() {
 		return nil, fmt.Errorf("pruning options are invalid: %v", pruning)
 	}
@@ -64,6 +64,7 @@ func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyL
 		dbm.NewMemDB(),
 		defaultIAVLCacheSize,
 		iavl.PruningOptions(pruning.KeepEvery, keepRecent),
+		startVersion,
 	)
 	if err != nil {
 		return nil, err

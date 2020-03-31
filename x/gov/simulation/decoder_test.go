@@ -35,10 +35,10 @@ func TestDecodeStore(t *testing.T) {
 	endTime := time.Now().UTC()
 
 	content := types.ContentFromProposalType("test", "test", types.ProposalTypeText)
-	proposal := types.NewProposal(content, 1, endTime, endTime.Add(24*time.Hour))
+	proposal := types.NewProposal(sdk.Context{}, sdk.ZeroDec(), content, 1, endTime, endTime.Add(24*time.Hour))
 	proposalIDBz := make([]byte, 8)
 	binary.LittleEndian.PutUint64(proposalIDBz, 1)
-	deposit := types.NewDeposit(1, delAddr1, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.OneInt())))
+	deposit := types.NewDeposit(1, delAddr1, sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, sdk.OneInt())))
 	vote := types.NewVote(1, delAddr1, types.OptionYes)
 
 	kvPairs := tmkv.Pairs{

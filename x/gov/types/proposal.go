@@ -23,14 +23,14 @@ type Proposal struct {
 }
 
 // NewProposal creates a new Proposal instance
-func NewProposal(content Content, id uint64, submitTime, depositEndTime time.Time) Proposal {
+func NewProposal(ctx sdk.Context, totalVoting sdk.Dec, content Content, id uint64, submitTime, depositEndTime time.Time) Proposal {
 	return Proposal{
 		Content: content,
 		ProposalBase: ProposalBase{
 			ProposalID:       id,
 			Status:           StatusDepositPeriod,
-			FinalTallyResult: EmptyTallyResult(),
-			TotalDeposit:     sdk.NewCoins(),
+			FinalTallyResult: EmptyTallyResult(totalVoting),
+			TotalDeposit:     sdk.NewDecCoins(),
 			SubmitTime:       submitTime,
 			DepositEndTime:   depositEndTime,
 		},
@@ -46,6 +46,16 @@ func (p Proposal) Equal(other Proposal) bool {
 func (p Proposal) String() string {
 	out, _ := yaml.Marshal(p)
 	return string(out)
+}
+
+func (p Proposals) MarshalYAML() (interface{}, error) {
+	out := "ID - (Status) [Type] Title\n"
+	for _, prop := range p {
+		out += fmt.Sprintf("%d - (%s) [%s] %s\n",
+			prop.ProposalID, prop.Status,
+			prop.ProposalType(), prop.GetTitle())
+	}
+	return strings.TrimSpace(out), nil
 }
 
 // Proposals is an array of proposal
@@ -177,6 +187,29 @@ func (status ProposalStatus) String() string {
 	}
 }
 
+func (status ProposalStatus) MarshalYAML() (interface{}, error) {
+	switch status {
+	case StatusDepositPeriod:
+		return "DepositPeriod", nil
+
+	case StatusVotingPeriod:
+		return "VotingPeriod", nil
+
+	case StatusPassed:
+		return "Passed", nil
+
+	case StatusRejected:
+		return "Rejected", nil
+
+	case StatusFailed:
+		return "Failed", nil
+
+	default:
+		return "", nil
+	}
+}
+
+
 // Format implements the fmt.Formatter interface.
 // nolint: errcheck
 func (status ProposalStatus) Format(s fmt.State, verb rune) {
@@ -261,13 +294,13 @@ func IsValidProposalType(ty string) bool {
 // proposals (ie. TextProposal ). Since these are
 // merely signaling mechanisms at the moment and do not affect state, it
 // performs a no-op.
-func ProposalHandler(_ sdk.Context, c Content) error {
-	switch c.ProposalType() {
+func ProposalHandler(_ sdk.Context, p *Proposal) error {
+	switch p.ProposalType() {
 	case ProposalTypeText:
 		// both proposal types do not change state so this performs a no-op
 		return nil
 
 	default:
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", p.ProposalType())
 	}
 }

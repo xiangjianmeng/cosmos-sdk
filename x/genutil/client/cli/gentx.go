@@ -111,7 +111,7 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 
 			// Fetch the amount of coins staked
 			amount := viper.GetString(flagAmount)
-			coins, err := sdk.ParseCoins(amount)
+			coins, err := sdk.ToHighPrecisionCoins(amount)
 			if err != nil {
 				return errors.Wrap(err, "failed to parse coins")
 			}

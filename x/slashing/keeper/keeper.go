@@ -83,7 +83,7 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, fraction sdk.De
 		),
 	)
 
-	k.sk.Slash(ctx, consAddr, distributionHeight, power, fraction)
+	//k.sk.Slash(ctx, consAddr, distributionHeight, power, fraction)
 }
 
 // Jail attempts to jail a validator. The slash is delegated to the staking module
